@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ColorMaster Pro AI - Diagnóstico Capilar & Calculadora de Colorimetría</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            100: '#FFF9E6',
+                            300: '#F3E5AB',
+                            400: '#E6CA65',
+                            500: '#D4AF37',
+                            600: '#AA8C2C',
+                            700: '#806921',
+                        },
+                        purpleaccent: {
+                            400: '#C084FC',
+                            500: '#A855F7',
+                            600: '#9333EA',
+                            900: '#2E1065'
+                        },
+                        salon: {
+                            950: '#0C0C0E',
+                            900: '#121215',
+                            800: '#1A1A1F',
+                            700: '#26262E',
+                            600: '#363642',
+                            500: '#4A4A58'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts & Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0C0C0E;
+            color: #E4E4E7;
+        }
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1A1A1F;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #363642;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #FFF9E6 0%, #D4AF37 50%, #AA8C2C 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .purple-gradient-text {
+            background: linear-gradient(135deg, #E9D5FF 0%, #C084FC 50%, #9333EA 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gold-border-glow {
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.12);
+        }
+        .purple-border-glow {
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
+        }
+        .scan-line {
+            background: linear-gradient(to bottom, transparent, #A855F7, transparent);
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-salon-950 text-gray-200">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="bg-salon-900 border-b border-salon-700 sticky top-0 z-50 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('ai-scanner')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purpleaccent-600 via-gold-500 to-gold-400 flex items-center justify-center text-salon-950 shadow-lg font-black">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-salon-950"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-lg font-extrabold tracking-wider gold-gradient-text">COLORMASTER</span>
+                            <span class="bg-purpleaccent-900 text-purpleaccent-400 border border-purpleaccent-500/30 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase">PRO AI</span>
+                        </div>
+                        <span class="text-[11px] block text-gray-400 font-medium">DIAGNÓSTICO CON IA & COLORIMETRÍA</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Tabs -->
+                <nav class="hidden lg:flex space-x-1" id="desktop-tabs">
+                    <button onclick="switchTab('ai-scanner')" id="tab-btn-ai-scanner" class="nav-tab active px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2 bg-purpleaccent-500/10 text-purpleaccent-400 border border-purpleaccent-500/30">
+                        <i data-lucide="camera" class="w-4 h-4"></i> Diagnóstico IA
+                    </button>
+                    <button onclick="switchTab('mezclador')" id="tab-btn-mezclador" class="nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2 text-gray-400 hover:text-white hover:bg-salon-800">
+                        <i data-lucide="flask-conical" class="w-4 h-4"></i> Mezclador & Regla 11
+                    </button>
+                    <button onclick="switchTab('oxidante')" id="tab-btn-oxidante" class="nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2 text-gray-400 hover:text-white hover:bg-salon-800">
+                        <i data-lucide="droplet" class="w-4 h-4"></i> Oxidantes (10-50 Vol)
+                    </button>
+                    <button onclick="switchTab('neutralizacion')" id="tab-btn-neutralizacion" class="nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2 text-gray-400 hover:text-white hover:bg-salon-800">
+                        <i data-lucide="palette" class="w-4 h-4"></i> Fondos & Neutralización
+                    </button>
+                    <button onclick="switchTab('formulas')" id="tab-btn-formulas" class="nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2 text-gray-400 hover:text-white hover:bg-salon-800">
+                        <i data-lucide="bookmark" class="w-4 h-4"></i> Historial Guardado
+                    </button>
+                </nav>
+
+                <!-- Actions / Key Config Button -->
+                <div class="flex items-center gap-2">
+                    <button onclick="openApiKeyModal()" class="flex items-center gap-1.5 bg-salon-800 hover:bg-salon-700 text-gold-400 border border-gold-500/30 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
+                        <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                        <span id="key-status-text" class="hidden sm:inline">Configurar API Key</span>
+                    </button>
+                    <button onclick="resetAllCalculators()" class="p-2 text-gray-400 hover:text-gold-400 hover:bg-salon-800 rounded-lg transition-colors" title="Reiniciar todo">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Sub-bar -->
+        <div class="lg:hidden flex overflow-x-auto border-t border-salon-800 px-2 py-2 gap-1 scrollbar-none" id="mobile-tabs">
+            <button onclick="switchTab('ai-scanner')" id="mobile-tab-btn-ai-scanner" class="nav-tab-mobile flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 bg-purpleaccent-500/10 text-purpleaccent-400 border border-purpleaccent-500/30">
+                <i data-lucide="camera" class="w-3.5 h-3.5"></i> Escáner IA
+            </button>
+            <button onclick="switchTab('mezclador')" id="mobile-tab-btn-mezclador" class="nav-tab-mobile flex-shrink-0 px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-gray-400 hover:bg-salon-800">
+                <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i> Mezclas
+            </button>
+            <button onclick="switchTab('oxidante')" id="mobile-tab-btn-oxidante" class="nav-tab-mobile flex-shrink-0 px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-gray-400 hover:bg-salon-800">
+                <i data-lucide="droplet" class="w-3.5 h-3.5"></i> Oxidantes
+            </button>
+            <button onclick="switchTab('neutralizacion')" id="mobile-tab-btn-neutralizacion" class="nav-tab-mobile flex-shrink-0 px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-gray-400 hover:bg-salon-800">
+                <i data-lucide="palette" class="w-3.5 h-3.5"></i> Tabla
+            </button>
+            <button onclick="switchTab('formulas')" id="mobile-tab-btn-formulas" class="nav-tab-mobile flex-shrink-0 px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-gray-400 hover:bg-salon-800">
+                <i data-lucide="bookmark" class="w-3.5 h-3.5"></i> Guardados
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: DIAGNÓSTICO E IDENTIFICACIÓN CON IA -->
+        <section id="tab-ai-scanner" class="tab-content space-y-6">
+            
+            <div class="bg-gradient-to-r from-purpleaccent-900/40 via-salon-900 to-salon-900 border border-purpleaccent-500/30 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-2 bg-purpleaccent-500/20 text-purpleaccent-300 border border-purpleaccent-500/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Diagnóstico Capilar Inteligente
+                        </div>
+                        <h2 class="text-2xl font-extrabold text-white tracking-tight">Análisis Técnico de Foto de Cliente</h2>
+                        <p class="text-xs text-gray-300 mt-1 max-w-2xl">Subí o tomá una foto del cabello de tu cliente. Nuestra Inteligencia Artificial evaluará la <strong>altura de tono actual</strong>, <strong>matiz dominantes</strong>, <strong>fondo de aclaración</strong> y te sugerirá <strong>fórmulas únicas para combinaciones personalizadas</strong>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Photo Upload Box (5 cols) -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="bg-salon-900 border border-salon-700 rounded-xl p-5 shadow-lg space-y-4">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i data-lucide="image" class="w-4 h-4 text-purpleaccent-400"></i>
+                            Cargar Imagen de Cabello
+                        </h3>
+
+                        <!-- Dropzone / Image Preview Container -->
+                        <div id="image-dropzone" class="relative border-2 border-dashed border-salon-600 hover:border-purpleaccent-500/60 rounded-xl p-4 text-center cursor-pointer transition-all bg-salon-950/60 group min-h-[260px] flex flex-col items-center justify-center overflow-hidden">
+                            
+                            <!-- Scanning Animation Bar -->
+                            <div id="ai-scanning-bar" class="hidden absolute left-0 right-0 h-1 scan-line z-20"></div>
+
+                            <!-- Image Preview Element -->
+                            <img id="image-preview" src="" alt="Vista previa" class="hidden max-h-[300px] w-full object-contain rounded-lg relative z-10">
+
+                            <!-- Placeholder Content -->
+                            <div id="upload-placeholder" class="space-y-3 p-4">
+                                <div class="w-14 h-14 mx-auto rounded-full bg-purpleaccent-500/10 text-purpleaccent-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i data-lucide="camera" class="w-7 h-7"></i>
+                                </div>
+                                <div class="text-xs text-gray-300 font-medium">
+                                    Hacé clic para <strong>tomar foto</strong> o seleccionar archivo
+                                </div>
+                                <div class="text-[11px] text-gray-500">Soporta JPG, PNG, WEBP</div>
+                            </div>
+
+                            <!-- Hidden file inputs -->
+                            <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelected(event)">
+                            <input type="file" id="file-input" accept="image/*" class="hidden" onchange="handleImageSelected(event)">
+                        </div>
+
+                        <!-- Upload Action Buttons -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="document.getElementById('camera-input').click()" class="bg-salon-800 hover:bg-salon-700 text-white font-medium px-3 py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 border border-salon-600 transition-colors">
+                                <i data-lucide="camera" class="w-4 h-4 text-purpleaccent-400"></i> Cámara Directa
+                            </button>
+                            <button onclick="document.getElementById('file-input').click()" class="bg-salon-800 hover:bg-salon-700 text-white font-medium px-3 py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 border border-salon-600 transition-colors">
+                                <i data-lucide="upload" class="w-4 h-4 text-gold-400"></i> Galería
+                            </button>
+                        </div>
+
+                        <!-- Target Style Preference Input -->
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 mb-1">Deseo de la Cliente / Objetivo del Color (Opcional):</label>
+                            <input type="text" id="user-desired-goal" placeholder="Ej: Quiere un rubio frío sin amarillos, o un cobrizo vibrante..." class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-purpleaccent-500">
+                        </div>
+
+                        <!-- Bleaching Requirement Option -->
+                        <div class="bg-salon-950/80 p-3 rounded-lg border border-salon-800">
+                            <label class="inline-flex items-center cursor-pointer gap-2.5">
+                                <input type="checkbox" id="user-requires-bleach" class="w-4 h-4 rounded border-salon-600 text-purpleaccent-600 focus:ring-purpleaccent-500 bg-salon-900">
+                                <span class="text-xs font-semibold text-gray-300">¿El trabajo requiere/considera Decoloración previa?</span>
+                            </label>
+                            <p class="text-[10px] text-gray-400 mt-1 pl-6">Al activar esta opción, la IA calculará la etapa de decoloración óptima y el oxidante sugerido.</p>
+                        </div>
+
+                        <!-- AI Trigger Button -->
+                        <button onclick="analyzeImageWithGemini()" id="btn-analyze-ai" class="w-full bg-gradient-to-r from-purpleaccent-600 to-gold-500 hover:from-purpleaccent-500 hover:to-gold-400 text-salon-950 font-extrabold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                            <span id="btn-analyze-text">Analizar Cabello con Gemini AI</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- AI Analysis Output Area (7 cols) -->
+                <div class="lg:col-span-7 space-y-4">
+                    
+                    <!-- AI Status / Initial State Banner -->
+                    <div id="ai-status-card" class="bg-salon-900 border border-salon-700 rounded-xl p-6 shadow-lg text-center py-12">
+                        <div class="w-16 h-16 mx-auto rounded-full bg-salon-800 text-purpleaccent-400 flex items-center justify-center mb-4">
+                            <i data-lucide="cpu" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-white">Esperando Imagen para Diagnóstico</h3>
+                        <p class="text-xs text-gray-400 mt-1 max-w-md mx-auto">Cargá la foto del cabello en el panel izquierdo y presioná el botón para obtener la lectura técnica completa del tono y reflejos.</p>
+                    </div>
+
+                    <!-- AI Results Section (Hidden until populated) -->
+                    <div id="ai-results-container" class="hidden space-y-5">
+                        
+                        <!-- Technical Diagnosis Card -->
+                        <div class="bg-salon-900 border border-purpleaccent-500/40 rounded-xl p-5 shadow-xl purple-border-glow space-y-4">
+                            <div class="flex justify-between items-center border-b border-salon-700 pb-3">
+                                <span class="text-xs uppercase font-extrabold text-purpleaccent-400 tracking-wider flex items-center gap-1.5">
+                                    <i data-lucide="check-circle" class="w-4 h-4"></i> Diagnóstico de Estado Actual
+                                </span>
+                                <span class="text-[11px] text-gray-400 bg-salon-800 px-2 py-1 rounded font-mono" id="ai-model-tag">Gemini AI</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <div class="bg-salon-950 p-3 rounded-lg border border-salon-700 text-center">
+                                    <span class="text-[10px] text-gray-400 block font-semibold">Altura de Tono Actual</span>
+                                    <span class="text-lg font-black text-white mt-0.5 block" id="ai-res-nivel">--</span>
+                                </div>
+                                <div class="bg-salon-950 p-3 rounded-lg border border-salon-700 text-center">
+                                    <span class="text-[10px] text-gray-400 block font-semibold">Matiz Dominante</span>
+                                    <span class="text-sm font-bold text-gold-400 mt-1 block" id="ai-res-matiz">--</span>
+                                </div>
+                                <div class="bg-salon-950 p-3 rounded-lg border border-salon-700 text-center">
+                                    <span class="text-[10px] text-gray-400 block font-semibold">Fondo Residual (FC)</span>
+                                    <span class="text-sm font-bold text-amber-400 mt-1 block" id="ai-res-fondo">--</span>
+                                </div>
+                                <div class="bg-salon-950 p-3 rounded-lg border border-salon-700 text-center">
+                                    <span class="text-[10px] text-gray-400 block font-semibold">Porosidad Estimada</span>
+                                    <span class="text-sm font-bold text-purpleaccent-300 mt-1 block" id="ai-res-porosidad">--</span>
+                                </div>
+                            </div>
+
+                            <!-- Detailed AI Feedback text -->
+                            <div class="bg-salon-950/80 p-4 rounded-lg border border-salon-800 text-xs text-gray-300 leading-relaxed" id="ai-res-diagnostico-detallado">
+                                Loading full diagnostic analysis...
+                            </div>
+                        </div>
+
+                        <!-- Bleaching & Oxidant Specific AI Recommendation Card -->
+                        <div id="ai-res-decoloracion-card" class="bg-salon-900 border border-amber-500/40 rounded-xl p-5 shadow-xl space-y-3">
+                            <div class="flex justify-between items-center border-b border-salon-700 pb-2">
+                                <h4 class="text-xs uppercase font-extrabold text-amber-400 tracking-wider flex items-center gap-1.5">
+                                    <i data-lucide="zap" class="w-4 h-4"></i> Diagnóstico de Decoloración & Oxidante Sugerido
+                                </h4>
+                                <span id="ai-res-decoloracion-badge" class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-bold uppercase">Decoloración Evaluada</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                                <div class="bg-salon-950 p-3 rounded-lg border border-salon-800">
+                                    <span class="text-[10px] text-gray-400 block font-semibold">Etapa de Decoloración</span>
+                                    <span class="text-sm font-bold text-amber-300 mt-0.5 block" id="ai-res-etapa-deco">--</span>
+                                </div>
+                                <div class="bg-salon-950 p-3 rounded-lg border border-salon-800">
+                                    <span class="text-[10px] text-gray-400 block font-semibold">Altura a Decolorar</span>
+                                    <span class="text-sm font-bold text-white mt-0.5 block" id="ai-res-altura-deco">--</span>
+                                </div>
+                                <div class="bg-salon-950 p-3 rounded-lg border border-salon-800">
+                                    <span class="text-[10px] text-gray-400 block font-semibold">Oxidante Recomendado</span>
+                                    <span class="text-sm font-bold text-purpleaccent-300 mt-0.5 block" id="ai-res-ox-recomendado">--</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-salon-950/60 p-3 rounded-lg border border-salon-800 text-xs text-gray-300" id="ai-res-deco-detalles">
+                                --
+                            </div>
+                        </div>
+
+                        <!-- Recommendations & Unique Creative Formulas -->
+                        <div class="bg-salon-900 border border-gold-500/40 rounded-xl p-5 shadow-xl gold-border-glow space-y-4">
+                            <h4 class="text-sm font-extrabold text-gold-400 uppercase tracking-wider flex items-center gap-2 border-b border-salon-700 pb-2">
+                                <i data-lucide="palette" class="w-4 h-4"></i> Fórmulas Únicas & Recomendaciones de Estilismo
+                            </h4>
+
+                            <div id="ai-res-formulas-list" class="space-y-3 text-xs">
+                                <!-- Dynamic unique mixing options inserted here -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: MEZCLADOR DE TINTURAS & REGLA DEL 11 -->
+        <section id="tab-mezclador" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Column: Inputs Form (7 cols) -->
+                <div class="lg:col-span-7 space-y-6">
+                    
+                    <!-- Card: Tubo Principal -->
+                    <div class="bg-salon-900 border border-salon-700 rounded-xl p-5 shadow-lg relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-gold-500"></div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-gold-500/20 text-gold-400 text-xs flex items-center justify-center font-bold">1</span>
+                                Tubo Principal (Base)
+                            </h3>
+                            <span class="text-xs text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded border border-gold-500/20 font-medium">Requerido</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Altura de Tono</label>
+                                <select id="t1-nivel" onchange="calculateColorMix()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500">
+                                    <option value="1">1 - Negro</option>
+                                    <option value="2">2 - Moreno</option>
+                                    <option value="3">3 - Castaño Oscuro</option>
+                                    <option value="4">4 - Castaño Medio</option>
+                                    <option value="5">5 - Castaño Claro</option>
+                                    <option value="6">6 - Rubio Oscuro</option>
+                                    <option value="7" selected>7 - Rubio Medio</option>
+                                    <option value="8">8 - Rubio Claro</option>
+                                    <option value="9">9 - Rubio Muy Claro</option>
+                                    <option value="10">10 - Rubio Platinado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Matiz / Reflejo</label>
+                                <select id="t1-matiz" onchange="calculateColorMix()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500">
+                                    <option value="0">.0 - Natural</option>
+                                    <option value="1" selected>.1 - Ceniza (Frío)</option>
+                                    <option value="2">.2 - Irisado / Violeta</option>
+                                    <option value="3">.3 - Dorado (Cálido)</option>
+                                    <option value="4">.4 - Cobrizo</option>
+                                    <option value="5">.5 - Caoba</option>
+                                    <option value="6">.6 - Rojo</option>
+                                    <option value="7">.7 - Verde / Mate</option>
+                                    <option value="8">.8 - Moka / Beige / Perla</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Cantidad (Gramos)</label>
+                                <div class="relative">
+                                    <input type="number" id="t1-gramos" value="60" min="0" step="1" oninput="calculateColorMix()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white pr-8 focus:outline-none focus:border-gold-500">
+                                    <span class="absolute right-3 top-2.5 text-xs text-gray-500 font-bold">g</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Tubo Secundario (Opcional) -->
+                    <div class="bg-salon-900 border border-salon-700 rounded-xl p-5 shadow-lg relative overflow-hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-full bg-salon-700 text-gray-400 text-xs flex items-center justify-center font-bold">2</span>
+                                Tubo Secundario (Mezcla)
+                            </h3>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="t2-enable" onchange="toggleTubo2(); calculateColorMix();" class="sr-only peer">
+                                <div class="w-9 h-5 bg-salon-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-gold-500"></div>
+                                <span class="ml-2 text-xs text-gray-400 font-medium">Activar Mezcla</span>
+                            </label>
+                        </div>
+
+                        <div id="t2-container" class="grid grid-cols-1 sm:grid-cols-3 gap-4 opacity-40 pointer-events-none transition-all duration-300">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Altura de Tono</label>
+                                <select id="t2-nivel" onchange="calculateColorMix()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500">
+                                    <option value="1">1 - Negro</option>
+                                    <option value="2">2 - Moreno</option>
+                                    <option value="3">3 - Castaño Oscuro</option>
+                                    <option value="4">4 - Castaño Medio</option>
+                                    <option value="5">5 - Castaño Claro</option>
+                                    <option value="6">6 - Rubio Oscuro</option>
+                                    <option value="7">7 - Rubio Medio</option>
+                                    <option value="8" selected>8 - Rubio Claro</option>
+                                    <option value="9">9 - Rubio Muy Claro</option>
+                                    <option value="10">10 - Rubio Platinado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Matiz / Reflejo</label>
+                                <select id="t2-matiz" onchange="calculateColorMix()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500">
+                                    <option value="0">.0 - Natural</option>
+                                    <option value="1">.1 - Ceniza</option>
+                                    <option value="2">.2 - Irisado / Violeta</option>
+                                    <option value="3" selected>.3 - Dorado</option>
+                                    <option value="4">.4 - Cobrizo</option>
+                                    <option value="5">.5 - Caoba</option>
+                                    <option value="6">.6 - Rojo</option>
+                                    <option value="7">.7 - Verde / Mate</option>
+                                    <option value="8">.8 - Moka / Beige / Perla</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Cantidad (Gramos)</label>
+                                <div class="relative">
+                                    <input type="number" id="t2-gramos" value="30" min="0" step="1" oninput="calculateColorMix()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white pr-8 focus:outline-none focus:border-gold-500">
+                                    <span class="absolute right-3 top-2.5 text-xs text-gray-500 font-bold">g</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Correctores / Intensificadores (Regla del 11) -->
+                    <div class="bg-salon-900 border border-salon-700 rounded-xl p-5 shadow-lg">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                    <i data-lucide="pipette" class="w-4 h-4 text-gold-400"></i>
+                                    Correctores / Regla del 11
+                                </h3>
+                                <p class="text-xs text-gray-400">Neutralización por centímetros lineales o gramos exactos</p>
+                            </div>
+                            <span class="text-xs text-gold-400 bg-gold-500/10 px-2.5 py-1 rounded-full font-mono border border-gold-500/20" id="regla11-sugerido-badge">Sugerido: -- cm</span>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-400 mb-1">Tonalidad del Corrector</label>
+                                    <select id="corrector-tipo" onchange="calculateColorMix()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500">
+                                        <option value="none">Sin Corrector</option>
+                                        <option value="azul">Azul (Neutraliza Naranja / Cobrizo)</option>
+                                        <option value="violeta">Violeta (Neutraliza Amarillo / Dorado)</option>
+                                        <option value="verde">Verde (Neutraliza Rojo)</option>
+                                        <option value="ceniza">Ceniza / Grafito (Enfría tonos cálidos)</option>
+                                        <option value="amarillo">Amarillo (Aporta luz / Dorado)</option>
+                                        <option value="rojo">Rojo (Intensifica calidez)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-400 mb-1">Modo de Ingreso</label>
+                                    <div class="flex rounded-lg bg-salon-950 p-1 border border-salon-600">
+                                        <button onclick="setCorrectorUnit('cm')" id="btn-unit-cm" class="flex-1 py-1 text-xs font-medium rounded-md bg-gold-500 text-salon-950 transition-all">Cm Lineales</button>
+                                        <button onclick="setCorrectorUnit('g')" id="btn-unit-g" class="flex-1 py-1 text-xs font-medium rounded-md text-gray-400 transition-all">Gramos Exactos</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-400 mb-1" id="corrector-val-label">Cantidad a Añadir (cm)</label>
+                                    <input type="number" id="corrector-val" value="0" min="0" step="0.5" oninput="calculateColorMix()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500">
+                                </div>
+                                <div class="bg-salon-950/60 p-3 rounded-lg border border-salon-800 text-xs space-y-1">
+                                    <div class="text-gold-400 font-semibold">¿Cómo funciona la Regla del 11?</div>
+                                    <div class="text-gray-400">Restá el Nivel a 11 (Ej: 11 - Nivel 8 = 3 cm de corrector por cada 60g de tinte).</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card: Ajustes de Oxidante -->
+                    <div class="bg-salon-900 border border-salon-700 rounded-xl p-5 shadow-lg">
+                        <h3 class="text-base font-bold text-white mb-3 flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-gold-400"></i>
+                            Proporción de Mezcla de Revelador
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Ratio de Trabajo (Tinte : Oxidante)</label>
+                                <select id="ratio-prop" onchange="calculateColorMix()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500">
+                                    <option value="1">1 : 1 (Cubrimiento de canas / Tono sobre tono)</option>
+                                    <option value="1.5" selected>1 : 1.5 (Estándar / Aclaración normal)</option>
+                                    <option value="2">1 : 2 (Superaclarantes / Decoloración)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1">Volumen Elegido</label>
+                                <select id="vol-elegido" onchange="calculateColorMix()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500">
+                                    <option value="10">10 Vol (3%) - Matizar & Oscurecer (&lt;1 Tono)</option>
+                                    <option value="20" selected>20 Vol (6%) - Cobertura Canas / Aclara 1 Tono</option>
+                                    <option value="30">30 Vol (9%) - Tonos Medios / Aclara 2-3 Tonos</option>
+                                    <option value="40">40 Vol (12%) - Tonos Altos / Aclara 3-4 Tonos</option>
+                                    <option value="50">50 Vol (15%) - Aclaración Máxima (4-5 Tonos)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Results & Color Card (5 cols) -->
+                <div class="lg:col-span-5 space-y-6">
+                    
+                    <!-- Main Result Display Card -->
+                    <div class="bg-salon-900 border border-gold-500/40 rounded-xl p-6 shadow-xl gold-border-glow relative">
+                        <div class="flex justify-between items-center mb-4 pb-3 border-b border-salon-700">
+                            <span class="text-xs uppercase font-extrabold tracking-wider text-gold-400">Resultado Técnico de Mezcla</span>
+                            <span class="text-xs text-gray-400 flex items-center gap-1">
+                                <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-green-400"></i> Calculado
+                            </span>
+                        </div>
+
+                        <!-- Swatch preview & Large Tone display -->
+                        <div class="flex items-center gap-5 my-4">
+                            <div id="swatch-preview" class="w-20 h-20 rounded-2xl border-2 border-white/20 shadow-inner flex-shrink-0 transition-all duration-300 flex items-center justify-center text-xs font-bold text-black/60 shadow-lg" style="background-color: #AA8F74;">
+                                Preview
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-400 font-medium">Nivel y Matiz Promedio</div>
+                                <div class="text-3xl font-extrabold text-white tracking-tight" id="res-codigo-formula">
+                                    7.1
+                                </div>
+                                <div class="text-sm font-semibold text-gold-400 mt-0.5" id="res-nombre-tono">
+                                    Rubio Medio Ceniza
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Technical Breakdown list -->
+                        <div class="space-y-3 bg-salon-950/80 rounded-lg p-4 border border-salon-800 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Nivel de Profundidad exacto:</span>
+                                <span class="font-bold text-white" id="res-nivel-exacto">7.0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Composición de Matices:</span>
+                                <span class="font-bold text-gold-300 text-right" id="res-matiz-descripcion">.1 Ceniza Dominante</span>
+                            </div>
+                            <div class="flex justify-between" id="res-corrector-row">
+                                <span class="text-gray-400">Corrector Neutralizante:</span>
+                                <span class="font-bold text-purpleaccent-300" id="res-corrector-desc">Ninguno</span>
+                            </div>
+                            <div class="border-t border-salon-800 pt-2 flex justify-between font-medium">
+                                <span class="text-gray-400">Peso Total de Tinturas:</span>
+                                <span class="font-bold text-white" id="res-peso-tintura">60 g</span>
+                            </div>
+                        </div>
+
+                        <!-- Oxidante Requirement -->
+                        <div class="mt-4 bg-gold-500/10 border border-gold-500/30 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-xs font-semibold text-gold-400 uppercase tracking-wide">Oxidante Requerido</div>
+                                    <div class="text-xl font-bold text-white mt-0.5" id="res-oxidante-ml">90 ml</div>
+                                    <div class="text-xs text-gray-300" id="res-oxidante-vol">con Agua Oxigenada de 20 Vol (6%)</div>
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-gold-500/20 text-gold-400 flex items-center justify-center">
+                                    <i data-lucide="beaker" class="w-5 h-5"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Formula Saver CTA -->
+                        <div class="mt-5 pt-3 border-t border-salon-800 flex gap-2">
+                            <input type="text" id="formula-nombre-input" placeholder="Nombre cliente / fórmula (ej: María Canas)" class="flex-1 bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-gold-500">
+                            <button onclick="saveCurrentFormula()" class="bg-gold-500 hover:bg-gold-600 text-salon-950 font-extrabold px-4 py-2 rounded-lg text-xs flex items-center gap-1.5 transition-colors">
+                                <i data-lucide="save" class="w-3.5 h-3.5"></i> Guardar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Color Wheel Helper Card -->
+                    <div class="bg-salon-900 border border-salon-700 rounded-xl p-5 shadow-lg">
+                        <h4 class="text-xs font-bold text-white mb-2 flex items-center gap-2">
+                            <i data-lucide="info" class="w-4 h-4 text-gold-400"></i> Observación del Colorista
+                        </h4>
+                        <p class="text-xs text-gray-400 leading-relaxed" id="res-observaciones">
+                            El reflejo frío .1 (Ceniza) neutralizará los visos cobrizos u anaranjados no deseados durante el proceso de tintura.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: CÁLCULO DE OXIDANTES Y MEZCLADOR DE VOLÚMENES (PEARSON) -->
+        <section id="tab-oxidante" class="tab-content hidden space-y-6">
+            
+            <!-- Cards summary 10 Vol to 50 Vol -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div class="bg-salon-900 border border-blue-500/30 p-3.5 rounded-xl space-y-1">
+                    <div class="flex justify-between items-center">
+                        <span class="font-extrabold text-blue-400 text-sm">10 VOL</span>
+                        <span class="text-[10px] bg-blue-500/20 text-blue-300 font-mono px-1.5 py-0.5 rounded">3%</span>
+                    </div>
+                    <div class="text-[11px] text-gray-300 font-semibold">Matizar y Oscurecer</div>
+                    <div class="text-[10px] text-gray-400">Aclara: &lt; 1 nivel</div>
+                </div>
+                <div class="bg-salon-900 border border-emerald-500/30 p-3.5 rounded-xl space-y-1">
+                    <div class="flex justify-between items-center">
+                        <span class="font-extrabold text-emerald-400 text-sm">20 VOL</span>
+                        <span class="text-[10px] bg-emerald-500/20 text-emerald-300 font-mono px-1.5 py-0.5 rounded">6%</span>
+                    </div>
+                    <div class="text-[11px] text-gray-300 font-semibold">Canas & Aclarar Ligeramente</div>
+                    <div class="text-[10px] text-gray-400">Aclara: Hasta 1 nivel</div>
+                </div>
+                <div class="bg-salon-900 border border-amber-500/30 p-3.5 rounded-xl space-y-1">
+                    <div class="flex justify-between items-center">
+                        <span class="font-extrabold text-amber-400 text-sm">30 VOL</span>
+                        <span class="text-[10px] bg-amber-500/20 text-amber-300 font-mono px-1.5 py-0.5 rounded">9%</span>
+                    </div>
+                    <div class="text-[11px] text-gray-300 font-semibold">Aclarar Tonos Medios</div>
+                    <div class="text-[10px] text-gray-400">Aclara: De 2 a 3 niveles</div>
+                </div>
+                <div class="bg-salon-900 border border-orange-500/30 p-3.5 rounded-xl space-y-1">
+                    <div class="flex justify-between items-center">
+                        <span class="font-extrabold text-orange-400 text-sm">40 VOL</span>
+                        <span class="text-[10px] bg-orange-500/20 text-orange-300 font-mono px-1.5 py-0.5 rounded">12%</span>
+                    </div>
+                    <div class="text-[11px] text-gray-300 font-semibold">Aclarar Tonos Altos</div>
+                    <div class="text-[10px] text-gray-400">Aclara: De 3 a 4 niveles</div>
+                </div>
+                <div class="bg-salon-900 border border-purpleaccent-500/40 p-3.5 rounded-xl space-y-1 purple-border-glow">
+                    <div class="flex justify-between items-center">
+                        <span class="font-extrabold text-purpleaccent-400 text-sm">50 VOL</span>
+                        <span class="text-[10px] bg-purpleaccent-500/20 text-purpleaccent-300 font-mono px-1.5 py-0.5 rounded">15%</span>
+                    </div>
+                    <div class="text-[11px] text-purpleaccent-300 font-semibold">Aclarar al Máximo</div>
+                    <div class="text-[10px] text-gray-400">Aclara: De 4 a 5 niveles</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Left: Peroxide Volume Calculator -->
+                <div class="bg-salon-900 border border-salon-700 rounded-xl p-6 shadow-lg space-y-5">
+                    <div class="border-b border-salon-800 pb-3">
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i data-lucide="scale" class="w-5 h-5 text-gold-400"></i>
+                            Mezclador de Volúmenes (Regla de Pearson)
+                        </h3>
+                        <p class="text-xs text-gray-400">¿Te quedaste sin un volumen específico en el salón? Combiná dos volúmenes existentes (10 Vol a 50 Vol) para crearlo.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1">Volumen Deseado a Obtener</label>
+                            <select id="ox-target-vol" onchange="calculatePeroxideBlend()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500">
+                                <option value="15">15 Vol (4.5%)</option>
+                                <option value="20" selected>20 Vol (6%)</option>
+                                <option value="25">25 Vol (7.5%)</option>
+                                <option value="30">30 Vol (9%)</option>
+                                <option value="35">35 Vol (10.5%)</option>
+                                <option value="40">40 Vol (12%)</option>
+                                <option value="45">45 Vol (13.5%)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1">Cantidad Total a Preparar</label>
+                            <div class="relative">
+                                <input type="number" id="ox-target-ml" value="100" min="10" step="10" oninput="calculatePeroxideBlend()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white pr-8 focus:outline-none focus:border-gold-500">
+                                <span class="absolute right-3 top-2.5 text-xs text-gray-500 font-bold">ml</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1">Volumen Menor Disponible</label>
+                            <select id="ox-low-vol" onchange="calculatePeroxideBlend()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500">
+                                <option value="0">0 Vol (Agua pura)</option>
+                                <option value="10" selected>10 Vol (3%)</option>
+                                <option value="20">20 Vol (6%)</option>
+                                <option value="30">30 Vol (9%)</option>
+                                <option value="40">40 Vol (12%)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1">Volumen Mayor Disponible</label>
+                            <select id="ox-high-vol" onchange="calculatePeroxideBlend()" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-gold-500">
+                                <option value="20">20 Vol (6%)</option>
+                                <option value="30" selected>30 Vol (9%)</option>
+                                <option value="40">40 Vol (12%)</option>
+                                <option value="50">50 Vol (15%)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bg-salon-950 border border-gold-500/30 rounded-xl p-5 space-y-3">
+                        <div class="text-xs uppercase tracking-wider font-extrabold text-gold-400">Receta de Mezcla Resultante</div>
+                        <div id="ox-blend-result" class="text-sm text-gray-200 space-y-2">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Reference & Action Table of Oxidants -->
+                <div class="bg-salon-900 border border-salon-700 rounded-xl p-6 shadow-lg space-y-4">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-5 h-5 text-gold-400"></i>
+                        Guía Técnica Completa de Reveladores
+                    </h3>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="border-b border-salon-800 text-gold-400">
+                                    <th class="py-2.5 px-3">Volumen</th>
+                                    <th class="py-2.5 px-3">Conc.</th>
+                                    <th class="py-2.5 px-3">Objetivo / Aclaración</th>
+                                    <th class="py-2.5 px-3">Uso Recomendado e Ideal</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-salon-800 text-gray-300">
+                                <tr>
+                                    <td class="py-3 px-3 font-bold text-blue-400">10 VOL</td>
+                                    <td class="py-3 px-3 font-mono">3%</td>
+                                    <td class="py-3 px-3 font-medium text-white">No aclara o &lt; 1 nivel</td>
+                                    <td class="py-3 px-3 leading-relaxed"><strong>Para matizar y oscurecer.</strong> Es el menos agresivo. Ideal para matizar rubios, neutralizar amarillos o dorados, y depósito de color en tonos oscuros.</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-3 font-bold text-emerald-400">20 VOL</td>
+                                    <td class="py-3 px-3 font-mono">6%</td>
+                                    <td class="py-3 px-3 font-medium text-white">Hasta 1 nivel</td>
+                                    <td class="py-3 px-3 leading-relaxed"><strong>Para oscurecer, cubrir canas y aclarar ligeramente.</strong> Uso frecuente y suave. Ideal para cobertura total de canas, mantener el tono o cambio muy sutil.</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-3 font-bold text-amber-400">30 VOL</td>
+                                    <td class="py-3 px-3 font-mono">9%</td>
+                                    <td class="py-3 px-3 font-medium text-white">De 2 a 3 niveles</td>
+                                    <td class="py-3 px-3 leading-relaxed"><strong>Para aclarar tonos medios.</strong> Aclara cabello natural o teñido. Ideal para aclaraciones medias, mechas suaves o cambios de color moderados.</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-3 font-bold text-orange-400">40 VOL</td>
+                                    <td class="py-3 px-3 font-mono">12%</td>
+                                    <td class="py-3 px-3 font-medium text-white">De 3 a 4 niveles</td>
+                                    <td class="py-3 px-3 leading-relaxed"><strong>Para aclarar tonos altos.</strong> Aclara varios tonos rápidamente. Debe usarse con cuidado. Ideal para mechas, reflejos, aclaraciones fuertes o buscar rubios muy claros.</td>
+                                </tr>
+                                <tr class="bg-purpleaccent-950/20">
+                                    <td class="py-3 px-3 font-bold text-purpleaccent-400">50 VOL</td>
+                                    <td class="py-3 px-3 font-mono text-purpleaccent-300">15%</td>
+                                    <td class="py-3 px-3 font-medium text-purpleaccent-200">De 4 a 5 niveles</td>
+                                    <td class="py-3 px-3 leading-relaxed text-purpleaccent-100"><strong>Para aclarar al máximo.</strong> Se usa con decolorantes en poco tiempo. Muy agresiva; recomendada solo para trabajos profesionales extremos y en manos expertas.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 4: FONDOS DE DECOLORACIÓN & NEUTRALIZACIÓN -->
+        <section id="tab-neutralizacion" class="tab-content hidden space-y-6">
+            
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-salon-900 p-5 rounded-xl border border-salon-700">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i data-lucide="layers" class="w-5 h-5 text-gold-400"></i>
+                        Tabla de Fondos de Aclaración (FC) & Neutralización
+                    </h3>
+                    <p class="text-xs text-gray-400">Pigmentos residuales revelados en decoloración y su corrector opuesto según el círculo cromático.</p>
+                </div>
+                <div class="w-full md:w-64 relative">
+                    <input type="text" id="search-fc" oninput="filterFCTable()" placeholder="Buscar nivel o matiz..." class="w-full bg-salon-950 border border-salon-600 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-gold-500">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-500 absolute left-2.5 top-2"></i>
+                </div>
+            </div>
+
+            <!-- Table Grid of Clarification Backgrounds -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" id="fc-cards-container">
+                <!-- Cards render automatically via JavaScript -->
+            </div>
+        </section>
+
+        <!-- TAB 5: FÓRMULAS GUARDADAS HISTORIAL -->
+        <section id="tab-formulas" class="tab-content hidden space-y-6">
+            <div class="bg-salon-900 border border-salon-700 rounded-xl p-6 shadow-lg">
+                <div class="flex justify-between items-center mb-6 pb-3 border-b border-salon-800">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i data-lucide="bookmark" class="w-5 h-5 text-gold-400"></i>
+                            Historial de Fórmulas Guardadas
+                        </h3>
+                        <p class="text-xs text-gray-400">Consultá o reutilizá fórmulas anteriores creadas en la app o analizadas con IA.</p>
+                    </div>
+                    <button onclick="clearSavedFormulas()" class="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20 transition-colors">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Borrar Todo
+                    </button>
+                </div>
+
+                <div id="formulas-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- API KEY CONFIGURATION MODAL -->
+    <div id="api-key-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-salon-900 border border-purpleaccent-500/40 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl purple-border-glow relative">
+            <div class="flex justify-between items-center border-b border-salon-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i data-lucide="key" class="w-5 h-5 text-purpleaccent-400"></i> Configurar Gemini API Key
+                </h3>
+                <button onclick="closeApiKeyModal()" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <p class="text-xs text-gray-300 leading-relaxed">
+                Ingresá tu clave de API de Google Gemini para habilitar la identificación automática de fotos y recomendaciones inteligentes. 
+            </p>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 mb-1">Gemini API Key</label>
+                <input type="password" id="gemini-api-key-input" placeholder="AIzaSy..." class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-purpleaccent-500 font-mono">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-400 mb-1">Modelo Seleccionado</label>
+                <select id="gemini-model-select" class="w-full bg-salon-950 border border-salon-600 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-purpleaccent-500">
+                    <option value="gemini-2.5-flash" selected>gemini-2.5-flash (Recomendado / Rápido con Imagen)</option>
+                    <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
+                </select>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeApiKeyModal()" class="px-4 py-2 text-xs text-gray-400 hover:text-white">Cancelar</button>
+                <button onclick="saveApiKey()" class="bg-gradient-to-r from-purpleaccent-600 to-gold-500 text-salon-950 font-extrabold px-5 py-2 rounded-lg text-xs">Guardar Clave</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER WITH AUTHOR CREDITS -->
+    <footer class="bg-salon-900 border-t border-salon-800 py-6 mt-auto text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto px-4 text-center flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="text-center md:text-left">
+                <div class="font-bold text-white text-sm tracking-wide gold-gradient-text">ColorMaster Pro AI</div>
+                <div class="text-gray-400 text-xs mt-0.5">
+                    Desarrollado y Creado por <span class="text-gold-400 font-semibold">Luciano Gabriel Rivadero</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 text-gray-400 text-[11px]">
+                <span>Sistema Internacional 1-10</span>
+                <span>•</span>
+                <span>Matices .0 al .8</span>
+                <span>•</span>
+                <span>Oxidantes 10 a 50 Vol</span>
+            </div>
+            <div class="text-[11px] text-gray-500">
+                &copy; Todos los derechos reservados. Herramienta de Colorimetría Capilar & IA.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // System Nomenclature Constants
+        const NIVEL_NAMES = {
+            1: "Negro", 2: "Moreno", 3: "Castaño Oscuro", 4: "Castaño Medio",
+            5: "Castaño Claro", 6: "Rubio Oscuro", 7: "Rubio Medio",
+            8: "Rubio Claro", 9: "Rubio Muy Claro", 10: "Rubio Platinado"
+        };
+
+        const MATIZ_NAMES = {
+            0: "Natural", 1: "Ceniza", 2: "Irisado / Violeta", 3: "Dorado",
+            4: "Cobrizo", 5: "Caoba", 6: "Rojo", 7: "Verde / Mate", 8: "Moka / Beige"
+        };
+
+        const MATIZ_COLORS = {
+            0: '#8E8E93', 1: '#9E9E9E', 2: '#B39DDB', 3: '#FFCA28',
+            4: '#FB8C00', 5: '#8D6E63', 6: '#E53935', 7: '#66BB6A', 8: '#D7CCC8'
+        };
+
+        const BASE_LEVEL_HEX = {
+            1: '#1A1817', 2: '#2B2623', 3: '#40352C', 4: '#574536',
+            5: '#735B46', 6: '#8E735B', 7: '#AA8F74', 8: '#C8AD91',
+            9: '#E4CCB0', 10: '#FAF0DB'
+        };
+
+        const FONDOS_ACLARACION = [
+            { nivel: 10, nombre: "Rubio Platinado", pigmento: "Amarillo pálido", neutralizador: ".2 Irisado / Violeta", swatch: "#FFFDE7" },
+            { nivel: 9, nombre: "Rubio Muy Claro", pigmento: "Amarillo", neutralizador: ".2 Violeta / Irisado", swatch: "#FFF59D" },
+            { nivel: 8, nombre: "Rubio Claro", pigmento: "Amarillo Naranja", neutralizador: ".21 Malva / Ceniza", swatch: "#FFE082" },
+            { nivel: 7, nombre: "Rubio Medio", pigmento: "Naranja (Cobre)", neutralizador: ".1 Ceniza (Azul)", swatch: "#FFB74D" },
+            { nivel: 6, nombre: "Rubio Oscuro", pigmento: "Rojo Naranja", neutralizador: ".17 Ceniza Mate", swatch: "#FF7043" },
+            { nivel: 5, nombre: "Castaño Claro", pigmento: "Rojo", neutralizador: ".7 Verde / Mate", swatch: "#E53935" },
+            { nivel: 4, nombre: "Castaño Medio", pigmento: "Rojo Oscuro", neutralizador: ".7 Verde Intenso", swatch: "#C62828" },
+            { nivel: 3, nombre: "Castaño Oscuro", pigmento: "Rojo / Negro", neutralizador: ".7 Verde Profundo", swatch: "#8E0000" },
+            { nivel: 2, nombre: "Moreno", pigmento: "Negro Rojizo", neutralizador: "Neutralizante Verde", swatch: "#4A0000" },
+            { nivel: 1, nombre: "Negro", pigmento: "Negro Intenso", neutralizador: "Decoloración previa", swatch: "#1A1817" }
+        ];
+
+        let selectedBase64Image = null;
+        let correctorUnit = 'cm';
+
+        window.onload = function() {
+            lucide.createIcons();
+            renderFCTable();
+            calculateColorMix();
+            calculatePeroxideBlend();
+            loadFormulasFromStorage();
+            updateKeyStatusUI();
+        };
+
+        // Navigation Tabs Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.className = 'nav-tab px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2 text-gray-400 hover:text-white hover:bg-salon-800';
+            });
+            document.querySelectorAll('.nav-tab-mobile').forEach(btn => {
+                btn.className = 'nav-tab-mobile flex-shrink-0 px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-gray-400 hover:bg-salon-800';
+            });
+
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            if (activeBtn) {
+                if(tabId === 'ai-scanner') {
+                    activeBtn.className = 'nav-tab active px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2 bg-purpleaccent-500/10 text-purpleaccent-400 border border-purpleaccent-500/30';
+                } else {
+                    activeBtn.className = 'nav-tab active px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center gap-2 bg-gold-500/10 text-gold-400 border border-gold-500/30';
+                }
+            }
+
+            const activeMobileBtn = document.getElementById(`mobile-tab-btn-${tabId}`);
+            if (activeMobileBtn) {
+                if(tabId === 'ai-scanner') {
+                    activeMobileBtn.className = 'nav-tab-mobile flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 bg-purpleaccent-500/10 text-purpleaccent-400 border border-purpleaccent-500/30';
+                } else {
+                    activeMobileBtn.className = 'nav-tab-mobile flex-shrink-0 px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 bg-gold-500/10 text-gold-400 border border-gold-500/30';
+                }
+            }
+        }
+
+        // Handle Image Selection
+        function handleImageSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgDataUrl = e.target.result;
+                selectedBase64Image = imgDataUrl.split(',')[1];
+
+                const imgPreview = document.getElementById('image-preview');
+                const placeholder = document.getElementById('upload-placeholder');
+                
+                imgPreview.src = imgDataUrl;
+                imgPreview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // GEMINI AI INTEGRATION
+        async function analyzeImageWithGemini() {
+            if (!selectedBase64Image) {
+                alert("Por favor cargá o tomá una foto del cabello primero.");
+                return;
+            }
+
+            const apiKey = localStorage.getItem('gemini_api_key') || "";
+            const selectedModel = localStorage.getItem('gemini_model') || "gemini-2.5-flash";
+
+            const btnText = document.getElementById('btn-analyze-text');
+            const btn = document.getElementById('btn-analyze-ai');
+            const scanBar = document.getElementById('ai-scanning-bar');
+
+            // Set loading state UI
+            btn.disabled = true;
+            btnText.innerText = "Analizando cabello...";
+            scanBar.classList.remove('hidden');
+
+            const systemPrompt = `Sos un Master Colorista Profesional experto en colorimetría capilar avanzada y decoloración.
+Analizá la foto del cabello y respondé ÚNICAMENTE en formato JSON válido con la siguiente estructura estricta:
+{
+  "alturaNivelEstimado": 7,
+  "nombreNivel": "Rubio Medio",
+  "matizDominante": ".4 Cobrizo",
+  "fondoResidual": "Naranja",
+  "porosidadEstimada": "Media-Alta",
+  "diagnosticoTecnico": "Explicación breve de 2-3 oraciones del estado visual del cabello...",
+  "decoloracion": {
+    "requerida": true,
+    "etapaSugerida": "Etapa 7 (Amarillo Naranja)",
+    "alturaAcanzar": "Nivel 8 a 9",
+    "oxidanteRecomendado": "20 Vol (6%) o 30 Vol (9%) según el estado del cabello",
+    "instruccionesDeco": "Usar polvo decolorante con baja gradación para proteger la fibra capilar."
+  },
+  "opcionesFormula": [
+    {
+      "tipo": "Resultado Frio / Neutralizado",
+      "formula": "60g 7.1 + 3cm Corrector Azul + 90ml Oxidante 20 Vol",
+      "explicacion": "Neutraliza los visos cobrizos indeseados..."
+    },
+    {
+      "tipo": "Resultado Único & Creativo",
+      "formula": "30g 7.3 + 30g 8.2 + 2cm Corrector Violeta + 90ml Oxidante 20 Vol",
+      "explicacion": "Crea un tono beige nacarado personalizado..."
+    }
+  ]
+}`;
+
+            const goalUserText = document.getElementById('user-desired-goal').value.trim();
+            const isBleachChecked = document.getElementById('user-requires-bleach').checked;
+            const userPrompt = `Analizá técnicamente la altura de tono actual (del 1 al 10), matiz residual (.0 al .8) y fondo de aclaración del cabello en la foto. 
+${goalUserText ? `Objetivo deseado del cliente: ${goalUserText}.` : ''}
+${isBleachChecked ? `El estilista ha marcado que este trabajo REQUIERE o evalúa DECOLORACIÓN PREVIA. Especificá qué etapa de decoloración (Etapas 1-7/8), la altura requerida y qué oxidante (10, 20, 30, 40 o 50 Vol) se recomienda usar.` : 'Evalúa si es necesaria decoloración o si con tinte directo alcanza y especifica el oxidante adecuado.'}
+Generá opciones de mezclas exactas y únicas para el estilista.`;
+
+            const payload = {
+                contents: [{
+                    role: "user",
+                    parts: [
+                        { text: userPrompt },
+                        { inlineData: { mimeType: "image/jpeg", data: selectedBase64Image } }
+                    ]
+                }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: { responseMimeType: "application/json" }
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (jsonText) {
+                    const data = JSON.parse(jsonText);
+                    renderAiResults(data);
+                } else {
+                    alert("No se obtuvo una respuesta clara del análisis. Intentá con otra foto.");
+                }
+            } catch (err) {
+                console.error("Gemini API Error:", err);
+                alert("Error al conectar con la API de Gemini: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btnText.innerText = "Analizar Cabello con Gemini AI";
+                scanBar.classList.add('hidden');
+            }
+        }
+
+        // Retry helper function for API call throttling
+        async function fetchWithRetry(url, options, retries = 3, backoff = 1000) {
+            try {
+                const res = await fetch(url, options);
+                if (!res.ok && res.status === 429 && retries > 0) {
+                    await new Promise(r => setTimeout(r, backoff));
+                    return fetchWithRetry(url, options, retries - 1, backoff * 2);
+                }
+                return res;
+            } catch (err) {
+                if (retries > 0) {
+                    await new Promise(r => setTimeout(r, backoff));
+                    return fetchWithRetry(url, options, retries - 1, backoff * 2);
+                }
+                throw err;
+            }
+        }
+
+        // Render AI Results on UI
+        function renderAiResults(data) {
+            document.getElementById('ai-status-card').classList.add('hidden');
+            document.getElementById('ai-results-container').classList.remove('hidden');
+
+            document.getElementById('ai-res-nivel').innerText = `${data.alturaNivelEstimado || '--'} (${data.nombreNivel || ''})`;
+            document.getElementById('ai-res-matiz').innerText = data.matizDominante || '--';
+            document.getElementById('ai-res-fondo').innerText = data.fondoResidual || '--';
+            document.getElementById('ai-res-porosidad').innerText = data.porosidadEstimada || '--';
+            document.getElementById('ai-res-diagnostico-detallado').innerText = data.diagnosticoTecnico || '';
+
+            // Decoloración Details
+            if (data.decoloracion) {
+                document.getElementById('ai-res-etapa-deco').innerText = data.decoloracion.etapaSugerida || '--';
+                document.getElementById('ai-res-altura-deco').innerText = data.decoloracion.alturaAcanzar || '--';
+                document.getElementById('ai-res-ox-recomendado').innerText = data.decoloracion.oxidanteRecomendado || '--';
+                document.getElementById('ai-res-deco-detalles').innerText = data.decoloracion.instruccionesDeco || 'No requiere decoloración agresiva.';
+            }
+
+            const listEl = document.getElementById('ai-res-formulas-list');
+            listEl.innerHTML = '';
+
+            if (data.opcionesFormula && Array.isArray(data.opcionesFormula)) {
+                data.opcionesFormula.forEach(opt => {
+                    const item = document.createElement('div');
+                    item.className = "bg-salon-950 p-3.5 rounded-lg border border-salon-800 space-y-1.5";
+                    item.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="font-extrabold text-gold-400 text-xs">${opt.tipo}</span>
+                            <button onclick="applyFormulaToMixer('${opt.formula}')" class="text-[10px] bg-purpleaccent-500/20 text-purpleaccent-300 border border-purpleaccent-500/30 px-2 py-0.5 rounded hover:bg-purpleaccent-500 hover:text-white transition-colors">
+                                Usar en Mezclador
+                            </button>
+                        </div>
+                        <div class="font-mono text-white text-xs font-bold">${opt.formula}</div>
+                        <div class="text-[11px] text-gray-400 leading-normal">${opt.explicacion}</div>
+                    `;
+                    listEl.appendChild(item);
+                });
+            }
+        }
+
+        function applyFormulaToMixer(formulaStr) {
+            switchTab('mezclador');
+            alert(`Fórmula sugerida para usar: "${formulaStr}". Podés ajustar los tubos y correctores en el panel.`);
+        }
+
+        // CALCULATOR ENGINE
+        function toggleTubo2() {
+            const enabled = document.getElementById('t2-enable').checked;
+            const container = document.getElementById('t2-container');
+            if (enabled) {
+                container.classList.remove('opacity-40', 'pointer-events-none');
+            } else {
+                container.classList.add('opacity-40', 'pointer-events-none');
+            }
+        }
+
+        function setCorrectorUnit(unit) {
+            correctorUnit = unit;
+            const btnCm = document.getElementById('btn-unit-cm');
+            const btnG = document.getElementById('btn-unit-g');
+            const label = document.getElementById('corrector-val-label');
+
+            if (unit === 'cm') {
+                btnCm.className = 'flex-1 py-1 text-xs font-medium rounded-md bg-gold-500 text-salon-950 transition-all';
+                btnG.className = 'flex-1 py-1 text-xs font-medium rounded-md text-gray-400 transition-all';
+                label.innerText = 'Cantidad a Añadir (cm lineales)';
+            } else {
+                btnG.className = 'flex-1 py-1 text-xs font-medium rounded-md bg-gold-500 text-salon-950 transition-all';
+                btnCm.className = 'flex-1 py-1 text-xs font-medium rounded-md text-gray-400 transition-all';
+                label.innerText = 'Cantidad a Añadir (gramos exactos)';
+            }
+            calculateColorMix();
+        }
+
+        function calculateColorMix() {
+            const n1 = parseFloat(document.getElementById('t1-nivel').value);
+            const m1 = parseInt(document.getElementById('t1-matiz').value);
+            const g1 = Math.max(0, parseFloat(document.getElementById('t1-gramos').value) || 0);
+
+            const t2Enabled = document.getElementById('t2-enable').checked;
+            const n2 = t2Enabled ? parseFloat(document.getElementById('t2-nivel').value) : 0;
+            const m2 = t2Enabled ? parseInt(document.getElementById('t2-matiz').value) : 0;
+            const g2 = t2Enabled ? Math.max(0, parseFloat(document.getElementById('t2-gramos').value) || 0) : 0;
+
+            const pesoTotalTinte = g1 + g2;
+
+            if (pesoTotalTinte <= 0) {
+                document.getElementById('res-codigo-formula').innerText = "--";
+                document.getElementById('res-nombre-tono').innerText = "Ingresá gramos de tinte";
+                return;
+            }
+
+            const nivelExacto = ((n1 * g1) + (n2 * g2)) / pesoTotalTinte;
+            const nivelRedondeado = Math.round(nivelExacto);
+
+            const cmSugeridosRegla11 = Math.max(0, 11 - nivelRedondeado);
+            const cmAjustadosPeso = (cmSugeridosRegla11 * pesoTotalTinte) / 60;
+            document.getElementById('regla11-sugerido-badge').innerText = `Sugerido: ${cmAjustadosPeso.toFixed(1)} cm para ${pesoTotalTinte}g`;
+
+            let matizDesc = "";
+            let matizCodigoStr = "";
+            if (!t2Enabled || g2 === 0 || m1 === m2) {
+                matizCodigoStr = m1 === 0 ? "" : `.${m1}`;
+                matizDesc = `.${m1} ${MATIZ_NAMES[m1]}`;
+            } else {
+                if (g1 >= g2) {
+                    matizCodigoStr = `.${m1}${m2}`;
+                    matizDesc = `.${m1} ${MATIZ_NAMES[m1]} (Dom.) + .${m2} ${MATIZ_NAMES[m2]}`;
+                } else {
+                    matizCodigoStr = `.${m2}${m1}`;
+                    matizDesc = `.${m2} ${MATIZ_NAMES[m2]} (Dom.) + .${m1} ${MATIZ_NAMES[m1]}`;
+                }
+            }
+
+            const correctorTipo = document.getElementById('corrector-tipo').value;
+            const correctorVal = parseFloat(document.getElementById('corrector-val').value) || 0;
+            let correctorText = "Ninguno";
+
+            if (correctorTipo !== 'none' && correctorVal > 0) {
+                correctorText = `${correctorVal} ${correctorUnit} de Corrector ${correctorTipo.toUpperCase()}`;
+            }
+
+            const ratio = parseFloat(document.getElementById('ratio-prop').value);
+            const vol = document.getElementById('vol-elegido').value;
+            const oxidanteMl = pesoTotalTinte * ratio;
+
+            const codigoFinal = `${nivelRedondeado}${matizCodigoStr}`;
+            const nombreFinal = `${NIVEL_NAMES[nivelRedondeado]} ${matizDesc}`;
+
+            const volPctMap = { 10: '3%', 20: '6%', 30: '9%', 40: '12%', 50: '15%' };
+
+            document.getElementById('res-codigo-formula').innerText = codigoFinal;
+            document.getElementById('res-nombre-tono').innerText = nombreFinal;
+            document.getElementById('res-nivel-exacto').innerText = `${nivelExacto.toFixed(2)} (Comercial: Nivel ${nivelRedondeado})`;
+            document.getElementById('res-matiz-descripcion').innerText = matizDesc;
+            document.getElementById('res-corrector-desc').innerText = correctorText;
+            document.getElementById('res-peso-tintura').innerText = `${pesoTotalTinte} g`;
+            document.getElementById('res-oxidante-ml').innerText = `${oxidanteMl.toFixed(1)} ml (g)`;
+            document.getElementById('res-oxidante-vol').innerText = `con Agua Oxigenada de ${vol} Vol (${volPctMap[vol] || '6%'}) - Ratio 1:${ratio}`;
+
+            const baseHex = BASE_LEVEL_HEX[nivelRedondeado] || '#8E735B';
+            const matizHex = MATIZ_COLORS[m1] || '#8E8E93';
+            const previewEl = document.getElementById('swatch-preview');
+            previewEl.style.backgroundColor = baseHex;
+            previewEl.style.borderRightColor = matizHex;
+            previewEl.style.borderRightWidth = "12px";
+            previewEl.innerText = codigoFinal;
+
+            let obsText = `Mezcla preparada para aplicar con una altura estimada de Nivel ${nivelRedondeado}. `;
+            if (m1 === 1 || m2 === 1) obsText += "El matiz Ceniza neutralizará reflejos cobrizos/naranjas. ";
+            if (m1 === 2 || m2 === 2) obsText += "El matiz Irisado cancelará visos amarillos. ";
+            if (m1 === 7 || m2 === 7) obsText += "El matiz Verde eliminará tonos rojizos residuales. ";
+            if (vol == 50) obsText += "⚠️ Precaución: 50 Vol (15%) es de aclaración extrema y uso exclusivo profesional. ";
+            if (correctorTipo !== 'none') obsText += `Se añadió corrector ${correctorTipo} para intensificar la neutralización técnica.`;
+            document.getElementById('res-observaciones').innerText = obsText;
+        }
+
+        // PEARSON PEROXIDE BLENDER
+        function calculatePeroxideBlend() {
+            const targetVol = parseFloat(document.getElementById('ox-target-vol').value);
+            const targetMl = parseFloat(document.getElementById('ox-target-ml').value) || 0;
+            const lowVol = parseFloat(document.getElementById('ox-low-vol').value);
+            const highVol = parseFloat(document.getElementById('ox-high-vol').value);
+
+            const resultContainer = document.getElementById('ox-blend-result');
+
+            if (lowVol >= highVol) {
+                resultContainer.innerHTML = `<span class="text-red-400 font-semibold">Error: El volumen menor debe ser inferior al mayor.</span>`;
+                return;
+            }
+
+            if (targetVol <= lowVol || targetVol >= highVol) {
+                resultContainer.innerHTML = `<span class="text-amber-400 font-semibold">El volumen deseado (${targetVol} Vol) debe estar entre el menor (${lowVol} Vol) y el mayor (${highVol} Vol).</span>`;
+                return;
+            }
+
+            const highMl = (targetMl * (targetVol - lowVol)) / (highVol - lowVol);
+            const lowMl = targetMl - highMl;
+
+            resultContainer.innerHTML = `
+                <div class="flex justify-between items-center py-1 border-b border-salon-800">
+                    <span>${lowVol === 0 ? 'Agua Pura / Destilada (0 Vol)' : `Oxidante de ${lowVol} Vol`}:</span>
+                    <strong class="text-gold-400 font-mono text-base">${lowMl.toFixed(1)} ml</strong>
+                </div>
+                <div class="flex justify-between items-center py-1 border-b border-salon-800">
+                    <span>Oxidante de ${highVol} Vol:</span>
+                    <strong class="text-gold-400 font-mono text-base">${highMl.toFixed(1)} ml</strong>
+                </div>
+                <div class="pt-2 text-xs text-gray-400">
+                    <i data-lucide="check" class="w-3.5 h-3.5 inline text-green-400"></i> Obtendrás exactamente <b>${targetMl} ml</b> de oxidante a <b>${targetVol} Vol</b>.
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // FC TABLE RENDER
+        function renderFCTable(filterText = '') {
+            const container = document.getElementById('fc-cards-container');
+            container.innerHTML = '';
+
+            const filtered = FONDOS_ACLARACION.filter(item => {
+                const search = filterText.toLowerCase();
+                return item.nivel.toString().includes(search) ||
+                       item.nombre.toLowerCase().includes(search) ||
+                       item.pigmento.toLowerCase().includes(search) ||
+                       item.neutralizador.toLowerCase().includes(search);
+            });
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-salon-900 border border-salon-700 rounded-xl p-4 space-y-3 relative overflow-hidden transition-all hover:border-gold-500/50";
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="text-2xl font-extrabold text-white">Nivel ${item.nivel}</span>
+                        <div class="w-7 h-7 rounded-full border-2 border-white/20 shadow-md" style="background-color: ${item.swatch}"></div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-gold-400">${item.nombre}</div>
+                        <div class="text-xs text-gray-300 mt-1"><b>Pigmento Residual (FC):</b> ${item.pigmento}</div>
+                    </div>
+                    <div class="bg-salon-950 p-2.5 rounded-lg border border-salon-800 text-xs">
+                        <span class="text-gray-400 block text-[10px] uppercase font-bold tracking-wider">Neutralizador</span>
+                        <span class="text-purpleaccent-300 font-medium">${item.neutralizador}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterFCTable() {
+            const text = document.getElementById('search-fc').value;
+            renderFCTable(text);
+        }
+
+        // HISTORIAL LOCALSTORAGE
+        function saveCurrentFormula() {
+            const nameInput = document.getElementById('formula-nombre-input');
+            const formulaName = nameInput.value.trim();
+
+            if (!formulaName) {
+                alert("Ingresá un nombre para identificar la fórmula de la cliente.");
+                return;
+            }
+
+            const formulaData = {
+                id: Date.now(),
+                nombre: formulaName,
+                fecha: new Date().toLocaleDateString(),
+                codigo: document.getElementById('res-codigo-formula').innerText,
+                descripcion: document.getElementById('res-nombre-tono').innerText,
+                peso: document.getElementById('res-peso-tintura').innerText,
+                oxidante: document.getElementById('res-oxidante-ml').innerText,
+                detalles: document.getElementById('res-observaciones').innerText
+            };
+
+            let saved = JSON.parse(localStorage.getItem('colormaster_formulas') || '[]');
+            saved.unshift(formulaData);
+            localStorage.setItem('colormaster_formulas', JSON.stringify(saved));
+
+            nameInput.value = '';
+            alert("¡Fórmula guardada en tu historial!");
+            loadFormulasFromStorage();
+        }
+
+        function loadFormulasFromStorage() {
+            const container = document.getElementById('formulas-list-container');
+            const saved = JSON.parse(localStorage.getItem('colormaster_formulas') || '[]');
+
+            if (saved.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 text-gray-500">
+                        <i data-lucide="bookmark-x" class="w-12 h-12 mx-auto mb-2 opacity-40"></i>
+                        <p class="text-sm">No tenés fórmulas guardadas todavía.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = '';
+            saved.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-salon-950 border border-salon-700 rounded-xl p-4 space-y-3 relative";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold text-white text-sm">${item.nombre}</h4>
+                            <span class="text-[10px] text-gray-500">${item.fecha}</span>
+                        </div>
+                        <span class="text-base font-black text-gold-400 bg-gold-500/10 px-2 py-0.5 rounded border border-gold-500/20">${item.codigo}</span>
+                    </div>
+                    <div class="text-xs text-gray-300 font-medium">${item.descripcion}</div>
+                    <div class="bg-salon-900 p-2.5 rounded-lg text-xs space-y-1 text-gray-400">
+                        <div><b>Tinte:</b> ${item.peso}</div>
+                        <div><b>Oxidante:</b> ${item.oxidante}</div>
+                    </div>
+                    <button onclick="deleteFormula(${item.id})" class="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 mt-2">
+                        <i data-lucide="trash" class="w-3.5 h-3.5"></i> Eliminar
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function deleteFormula(id) {
+            let saved = JSON.parse(localStorage.getItem('colormaster_formulas') || '[]');
+            saved = saved.filter(f => f.id !== id);
+            localStorage.setItem('colormaster_formulas', JSON.stringify(saved));
+            loadFormulasFromStorage();
+        }
+
+        function clearSavedFormulas() {
+            if (confirm("¿Borrar todo el historial de fórmulas guardadas?")) {
+                localStorage.removeItem('colormaster_formulas');
+                loadFormulasFromStorage();
+            }
+        }
+
+        // API KEY MODAL LOGIC
+        function openApiKeyModal() {
+            document.getElementById('gemini-api-key-input').value = localStorage.getItem('gemini_api_key') || '';
+            document.getElementById('gemini-model-select').value = localStorage.getItem('gemini_model') || 'gemini-2.5-flash';
+            document.getElementById('api-key-modal').classList.remove('hidden');
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById('api-key-modal').classList.add('hidden');
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('gemini-api-key-input').value.trim();
+            const model = document.getElementById('gemini-model-select').value;
+            localStorage.setItem('gemini_api_key', key);
+            localStorage.setItem('gemini_model', model);
+            updateKeyStatusUI();
+            closeApiKeyModal();
+        }
+
+        function updateKeyStatusUI() {
+            const key = localStorage.getItem('gemini_api_key');
+            const keyText = document.getElementById('key-status-text');
+            if (key) {
+                keyText.innerText = "API Key Configurada ✓";
+            } else {
+                keyText.innerText = "Configurar API Key";
+            }
+        }
+
+        function resetAllCalculators() {
+            document.getElementById('t1-nivel').value = "7";
+            document.getElementById('t1-matiz').value = "1";
+            document.getElementById('t1-gramos').value = "60";
+            document.getElementById('t2-enable').checked = false;
+            toggleTubo2();
+            document.getElementById('corrector-tipo').value = "none";
+            document.getElementById('corrector-val').value = "0";
+            document.getElementById('ratio-prop').value = "1.5";
+            document.getElementById('vol-elegido').value = "20";
+            calculateColorMix();
+        }
+    </script>
+</body>
+</html>
